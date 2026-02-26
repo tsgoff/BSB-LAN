@@ -1,0 +1,44 @@
+esphome:
+  name: bsb-lan-esphome
+
+esp32:
+  board: esp32dev # Change to your board, e.g., esp32-poe for Olimex
+
+# Load the local component
+external_components:
+  - source:
+      type: local
+      path: external_components
+
+# BSB uses 4800 baud, 8 bits, Even parity, 1 stop bit
+# Hardware inversion is usually required by the BSB adapters
+uart:
+  id: uart_bus
+  tx_pin: GPIO17 # Adjust to your adapter's pins
+  rx_pin: GPIO16
+  baud_rate: 4800
+  parity: EVEN
+  stop_bits: 1
+  # The original BSB-LAN code uses a custom software serial 
+  # or hardware serial with inversion. 
+  # ESPHome's UART component supports inversion on ESP32.
+  # use_signal_inversion: true 
+
+bsb_lan:
+  id: bsb_adapter
+  bus_type: BSB
+  my_addr: 0x42
+  dest_addr: 0x00
+
+sensor:
+  - platform: bsb_lan
+    name: "Außentemperatur"
+    parameter: 0x053D050E # Manual hex ID for now (Command ID for param 8700)
+    type: TEMP
+    update_interval: 60s
+
+  - platform: bsb_lan
+    name: "Kesseltemperatur"
+    parameter: 0x053D0510 # Command ID for param 8740
+    type: TEMP
+    update_interval: 60s
